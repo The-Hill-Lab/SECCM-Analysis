@@ -43,6 +43,8 @@ E = rawData[:,0]
 
 #Format data cube. Note that this takes into account the alternating raster pattern of the SECCM instrument.                
 dataCube = sp.zeros((Ny,Nx,Nt),dtype=sp.float64)
+datamin = sp.inf
+datamax = -sp.inf
 for nx in range(Nx):
 	for ny in range(Ny):
 		for nz in range(Nt):
@@ -51,6 +53,11 @@ for nx in range(Nx):
 				dataCube[ny,nx,nz] = datapoint
 			else:
 				dataCube[ny,-(nx+1),nz] = datapoint
+			if nz >= 100:
+				if datapoint < datamin:
+					datamin = datapoint
+				if datapoint > datamax:
+					datamax = datapoint
 
 #Generate movie if desired.
 choice = input("Would you like a movie? (y/n)")
@@ -96,9 +103,9 @@ def onclick(event):
 	y = int(round(event.ydata))
 	exportCV(x,y)
 	print(x, y)
-		
-#Creates figure and binds GUI functionality
-fig, current_ax = plt.subplots()  
+
+fig, current_ax = plt.subplots()  		
+totalCurr = sp.sum(dataCube,axis=2)
 totCurrPlot = plt.imshow(totalCurr,interpolation='none',origin='lower')
 plt.connect('button_press_event', onclick)
 plt.show()
